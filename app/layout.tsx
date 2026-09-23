@@ -9,8 +9,59 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Next.js and Supabase Starter Kit",
-  description: "The fastest way to build apps with Next.js and Supabase",
+
+  title: {
+    default: "The Rally",
+    template: "%s | The Rally",
+  },
+
+  description:
+    "Find students to play sports with, create games, and join rallies at the University of Auckland.",
+
+  applicationName: "The Rally",
+
+  keywords: [
+    "The Rally",
+    "University of Auckland",
+    "UoA",
+    "student sports",
+    "sports",
+    "games",
+    "badminton",
+    "football",
+    "tennis",
+    "cricket",
+    "basketball",
+    "volleyball",
+  ],
+
+  authors: [
+    {
+      name: "The Rally",
+    },
+  ],
+
+  creator: "The Rally",
+
+  openGraph: {
+    type: "website",
+    siteName: "The Rally",
+    title: "The Rally",
+    description:
+      "Find students to play sports with, create games, and join rallies at the University of Auckland.",
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "The Rally",
+    description:
+      "Find students to play sports with, create games, and join rallies at the University of Auckland.",
+  },
+
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 const geistSans = Geist({
