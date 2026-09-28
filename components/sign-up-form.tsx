@@ -1,286 +1,232 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import Link from "next/link";
+import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
-export function SignUpForm({
-  className,
-  ...props
-}: React.ComponentPropsWithoutRef<"div">) {
+const isUoaStudentEmail = (emailAddress: string) => {
+  const normalizedEmail = emailAddress
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "");
+
+  const atIndex = normalizedEmail.lastIndexOf("@");
+
+  if (atIndex <= 0) {
+    return false;
+  }
+
+  const localPart = normalizedEmail.slice(0, atIndex);
+  const domain = normalizedEmail.slice(atIndex + 1);
+
+  return (
+    localPart.length > 0 &&
+    domain === "aucklanduni.ac.nz"
+  );
+};
+
+export default function SignUpForm() {
+  const router = useRouter();
+  const supabase = createClient();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const router = useRouter();
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
 
-  // =====================================================
-  // UNIVERSITY OF AUCKLAND EMAIL VALIDATION
-  // =====================================================
-
-  const isUoaStudentEmail = (emailAddress: string) => {
-    const normalizedEmail = emailAddress
-      .trim()
-      .toLowerCase();
-
-    const parts = normalizedEmail.split("@");
-
-    if (parts.length !== 2) {
-      return false;
-    }
-
-    const localPart = parts[0];
-    const domain = parts[1];
-
-    if (!localPart) {
-      return false;
-    }
-
-    return domain === "aucklanduni.ac.nz";
-  };
-
-  // =====================================================
-  // SIGN UP
-  // =====================================================
-
-  const handleSignUp = async (
-    e: React.FormEvent<HTMLFormElement>,
-  ) => {
-    e.preventDefault();
-
-    setIsLoading(true);
-    setError(null);
+    setError("");
 
     const normalizedEmail = email
       .trim()
-      .toLowerCase();
-
-    // =====================================================
-    // UOA EMAIL VALIDATION
-    // =====================================================
+      .toLowerCase()
+      .replace(/\s+/g, "");
 
     if (!isUoaStudentEmail(normalizedEmail)) {
       setError(
         "Please use your University of Auckland student email address ending in @aucklanduni.ac.nz.",
       );
-
-      setIsLoading(false);
-      return;
-    }
-
-    // =====================================================
-    // PASSWORD VALIDATION
-    // =====================================================
-
-    if (password !== repeatPassword) {
-      setError("Passwords do not match.");
-      setIsLoading(false);
       return;
     }
 
     if (password.length < 6) {
-      setError(
-        "Your password must be at least 6 characters long.",
-      );
-
-      setIsLoading(false);
+      setError("Password must be at least 6 characters.");
       return;
     }
 
-    // =====================================================
-    // SUPABASE SIGN UP
-    // =====================================================
+    if (password !== repeatPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    setLoading(true);
 
     try {
-      const supabase = createClient();
-
-      const {
-        error: signUpError,
-      } = await supabase.auth.signUp({
-        email: normalizedEmail,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/protected`,
-        },
-      });
+      const { data, error: signUpError } =
+        await supabase.auth.signUp({
+          email: normalizedEmail,
+          password,
+        });
 
       if (signUpError) {
-        throw signUpError;
+        setError(signUpError.message);
+        return;
+      }
+
+      if (!data.user) {
+        setError(
+          "Account creation failed. Please try again.",
+        );
+        return;
       }
 
       router.push("/auth/sign-up-success");
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        setError(error.message);
-      } else {
-        setError(
-          "We couldn't create your account. Please try again.",
-        );
-      }
+      router.refresh();
+    } catch (err) {
+      console.error("Signup error:", err);
+
+      setError(
+        "Something went wrong while creating your account. Please try again.",
+      );
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   return (
-    <div
-      className={cn(
-        "flex flex-col gap-6",
-        className,
-      )}
-      {...props}
-    >
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">
+    <div className="w-full max-w-md">
+      <div className="rounded-2xl border border-white/10 bg-black p-8 shadow-2xl">
+        <div className="mb-8">
+          <h1 className="text-3xl font-semibold tracking-tight text-white">
             Create your Rally account
-          </CardTitle>
+          </h1>
 
-          <CardDescription>
-            The Rally is for University of
-            Auckland students. Use your UoA
-            student email to create an account.
-          </CardDescription>
-        </CardHeader>
+          <p className="mt-3 text-sm leading-6 text-gray-400">
+            The Rally is for University of Auckland students.
+            Use your UoA student email to create an account.
+          </p>
+        </div>
 
-        <CardContent>
-          <form onSubmit={handleSignUp}>
-            <div className="flex flex-col gap-6">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-6"
+          noValidate
+        >
+          <div>
+            <label
+              htmlFor="email"
+              className="mb-2 block text-sm font-medium text-white"
+            >
+              UoA student email
+            </label>
 
-              {/* =================================================
-                  EMAIL
-              ================================================= */}
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(event) => {
+                setEmail(event.target.value);
+                setError("");
+              }}
+              placeholder="yourname@aucklanduni.ac.nz"
+              className="w-full rounded-lg border border-white/15 bg-[#202938] px-4 py-3 text-sm text-white outline-none transition placeholder:text-gray-500 focus:border-white/40 focus:ring-1 focus:ring-white/20"
+              required
+            />
 
-              <div className="grid gap-2">
-                <Label htmlFor="email">
-                  UoA student email
-                </Label>
+            <p className="mt-2 text-xs text-gray-400">
+              Use your official University of Auckland student
+              email.
+            </p>
+          </div>
 
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="yourname@aucklanduni.ac.nz"
-                  required
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    setError(null);
-                  }}
-                  autoComplete="email"
-                />
+          <div>
+            <label
+              htmlFor="password"
+              className="mb-2 block text-sm font-medium text-white"
+            >
+              Password
+            </label>
 
-                <p className="text-xs text-muted-foreground">
-                  Use your official University
-                  of Auckland student email.
-                </p>
-              </div>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="new-password"
+              value={password}
+              onChange={(event) => {
+                setPassword(event.target.value);
+                setError("");
+              }}
+              placeholder="••••••••"
+              className="w-full rounded-lg border border-white/15 bg-transparent px-4 py-3 text-sm text-white outline-none transition placeholder:text-gray-500 focus:border-white/40 focus:ring-1 focus:ring-white/20"
+              minLength={6}
+              required
+            />
 
-              {/* =================================================
-                  PASSWORD
-              ================================================= */}
+            <p className="mt-2 text-xs text-gray-400">
+              At least 6 characters.
+            </p>
+          </div>
 
-              <div className="grid gap-2">
-                <Label htmlFor="password">
-                  Password
-                </Label>
+          <div>
+            <label
+              htmlFor="repeat-password"
+              className="mb-2 block text-sm font-medium text-white"
+            >
+              Repeat password
+            </label>
 
-                <Input
-                  id="password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    setError(null);
-                  }}
-                  autoComplete="new-password"
-                />
+            <input
+              id="repeat-password"
+              name="repeat-password"
+              type="password"
+              autoComplete="new-password"
+              value={repeatPassword}
+              onChange={(event) => {
+                setRepeatPassword(event.target.value);
+                setError("");
+              }}
+              placeholder="••••••••"
+              className="w-full rounded-lg border border-white/15 bg-transparent px-4 py-3 text-sm text-white outline-none transition placeholder:text-gray-500 focus:border-white/40 focus:ring-1 focus:ring-white/20"
+              minLength={6}
+              required
+            />
+          </div>
 
-                <p className="text-xs text-muted-foreground">
-                  At least 6 characters.
-                </p>
-              </div>
-
-              {/* =================================================
-                  REPEAT PASSWORD
-              ================================================= */}
-
-              <div className="grid gap-2">
-                <Label htmlFor="repeat-password">
-                  Repeat password
-                </Label>
-
-                <Input
-                  id="repeat-password"
-                  type="password"
-                  required
-                  value={repeatPassword}
-                  onChange={(e) => {
-                    setRepeatPassword(e.target.value);
-                    setError(null);
-                  }}
-                  autoComplete="new-password"
-                />
-              </div>
-
-              {/* =================================================
-                  ERROR
-              ================================================= */}
-
-              {error && (
-                <div className="rounded-md border border-red-200 bg-red-50 p-3">
-                  <p className="text-sm leading-5 text-red-600">
-                    {error}
-                  </p>
-                </div>
-              )}
-
-              {/* =================================================
-                  SIGN UP
-              ================================================= */}
-
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading}
-              >
-                {isLoading
-                  ? "Creating your account..."
-                  : "Create account"}
-              </Button>
+          {error && (
+            <div
+              role="alert"
+              className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm leading-6 text-red-600"
+            >
+              {error}
             </div>
+          )}
 
-            {/* =================================================
-                LOGIN
-            ================================================= */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-lg bg-white px-4 py-3 text-sm font-medium text-black transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {loading ? "Creating account..." : "Create account"}
+          </button>
+        </form>
 
-            <div className="mt-4 text-center text-sm">
-              Already have an account?{" "}
-
-              <Link
-                href="/auth/login"
-                className="font-medium underline underline-offset-4"
-              >
-                Sign in
-              </Link>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+        <p className="mt-6 text-center text-sm text-gray-400">
+          Already have an account?{" "}
+          <Link
+            href="/auth/login"
+            className="font-medium text-white underline underline-offset-4 hover:text-gray-300"
+          >
+            Sign in
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }
