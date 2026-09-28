@@ -21,38 +21,53 @@ export function SignUpForm({
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
   const [email, setEmail] = useState("");
-  const [password, setPassword] =
-    useState("");
-  const [repeatPassword, setRepeatPassword] =
-    useState("");
-  const [error, setError] =
-    useState<string | null>(null);
-  const [isLoading, setIsLoading] =
-    useState(false);
+  const [password, setPassword] = useState("");
+  const [repeatPassword, setRepeatPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const router = useRouter();
 
-  const isUoaStudentEmail = (
-    emailAddress: string,
-  ) => {
-    const normalizedEmail =
-      emailAddress.trim().toLowerCase();
+  // =====================================================
+  // UNIVERSITY OF AUCKLAND EMAIL VALIDATION
+  // =====================================================
 
-    return normalizedEmail.endsWith(
-      "@aucklanduni.ac.nz",
-    );
+  const isUoaStudentEmail = (emailAddress: string) => {
+    const normalizedEmail = emailAddress
+      .trim()
+      .toLowerCase();
+
+    const parts = normalizedEmail.split("@");
+
+    if (parts.length !== 2) {
+      return false;
+    }
+
+    const localPart = parts[0];
+    const domain = parts[1];
+
+    if (!localPart) {
+      return false;
+    }
+
+    return domain === "aucklanduni.ac.nz";
   };
 
+  // =====================================================
+  // SIGN UP
+  // =====================================================
+
   const handleSignUp = async (
-    e: React.FormEvent,
+    e: React.FormEvent<HTMLFormElement>,
   ) => {
     e.preventDefault();
 
     setIsLoading(true);
     setError(null);
 
-    const normalizedEmail =
-      email.trim().toLowerCase();
+    const normalizedEmail = email
+      .trim()
+      .toLowerCase();
 
     // =====================================================
     // UOA EMAIL VALIDATION
@@ -72,10 +87,7 @@ export function SignUpForm({
     // =====================================================
 
     if (password !== repeatPassword) {
-      setError(
-        "Passwords do not match.",
-      );
-
+      setError("Passwords do not match.");
       setIsLoading(false);
       return;
     }
@@ -89,33 +101,31 @@ export function SignUpForm({
       return;
     }
 
+    // =====================================================
+    // SUPABASE SIGN UP
+    // =====================================================
+
     try {
-      const supabase =
-        createClient();
+      const supabase = createClient();
 
       const {
         error: signUpError,
-      } =
-        await supabase.auth.signUp({
-          email: normalizedEmail,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/protected`,
-          },
-        });
+      } = await supabase.auth.signUp({
+        email: normalizedEmail,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/protected`,
+        },
+      });
 
       if (signUpError) {
         throw signUpError;
       }
 
-      router.push(
-        "/auth/sign-up-success",
-      );
+      router.push("/auth/sign-up-success");
     } catch (error: unknown) {
       if (error instanceof Error) {
-        setError(
-          error.message,
-        );
+        setError(error.message);
       } else {
         setError(
           "We couldn't create your account. Please try again.",
@@ -148,9 +158,7 @@ export function SignUpForm({
         </CardHeader>
 
         <CardContent>
-          <form
-            onSubmit={handleSignUp}
-          >
+          <form onSubmit={handleSignUp}>
             <div className="flex flex-col gap-6">
 
               {/* =================================================
@@ -168,11 +176,10 @@ export function SignUpForm({
                   placeholder="yourname@aucklanduni.ac.nz"
                   required
                   value={email}
-                  onChange={(e) =>
-                    setEmail(
-                      e.target.value,
-                    )
-                  }
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setError(null);
+                  }}
                   autoComplete="email"
                 />
 
@@ -196,11 +203,10 @@ export function SignUpForm({
                   type="password"
                   required
                   value={password}
-                  onChange={(e) =>
-                    setPassword(
-                      e.target.value,
-                    )
-                  }
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setError(null);
+                  }}
                   autoComplete="new-password"
                 />
 
@@ -222,14 +228,11 @@ export function SignUpForm({
                   id="repeat-password"
                   type="password"
                   required
-                  value={
-                    repeatPassword
-                  }
-                  onChange={(e) =>
-                    setRepeatPassword(
-                      e.target.value,
-                    )
-                  }
+                  value={repeatPassword}
+                  onChange={(e) => {
+                    setRepeatPassword(e.target.value);
+                    setError(null);
+                  }}
                   autoComplete="new-password"
                 />
               </div>
@@ -253,9 +256,7 @@ export function SignUpForm({
               <Button
                 type="submit"
                 className="w-full"
-                disabled={
-                  isLoading
-                }
+                disabled={isLoading}
               >
                 {isLoading
                   ? "Creating your account..."
