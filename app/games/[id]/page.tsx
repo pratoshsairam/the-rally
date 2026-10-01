@@ -36,6 +36,7 @@ type Game = {
   gender_preference: string | null;
   cost_per_player: number;
   description: string | null;
+  chat_link: string | null;
   status: string;
   created_at: string;
   updated_at: string;
@@ -457,6 +458,7 @@ export default function GameDetailsPage() {
             gender_preference,
             cost_per_player,
             description,
+            chat_link,
             status,
             created_at,
             updated_at
@@ -1984,6 +1986,18 @@ export default function GameDetailsPage() {
                 </p>
               </div>
             </div>
+
+            {game.chat_link && (
+                <section className="mt-8 rounded-3xl border border-black/10 bg-white p-8">
+                  <p className="text-xs font-medium uppercase tracking-[0.25em] text-slate-400">
+                    Chat link
+                  </p>
+
+                  <p className="mt-5 whitespace-pre-wrap text-[15px] leading-7 text-slate-700">
+                    <a href={game.chat_link} target="_blank" rel="noopener noreferrer">{game.chat_link}</a>
+                  </p>
+                </section>
+            )}
 
             {game.description && (
               <section className="mt-8 rounded-3xl border border-black/10 bg-white p-8">

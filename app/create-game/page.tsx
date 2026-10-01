@@ -30,6 +30,7 @@ type FormState = {
   genderPreference: string;
   costPerPlayer: string;
   description: string;
+  chatLink: string;
 };
 
 const initialForm: FormState = {
@@ -45,6 +46,7 @@ const initialForm: FormState = {
   genderPreference: "everyone",
   costPerPlayer: "0",
   description: "",
+  chatLink: "",
 };
 
 function formatSportName(name: string) {
@@ -442,6 +444,7 @@ export default function CreateGamePage() {
           description:
             form.description.trim() ||
             null,
+          chat_link: form.chatLink.trim(),
           status: "open",
         })
         .select("id")
@@ -1029,6 +1032,30 @@ export default function CreateGamePage() {
                 This currently only displays the cost.
                 Payment will be added later.
               </p>
+            </section>
+
+            <section className="mt-8">
+              <label
+                  htmlFor="chatLink"
+                  className="mb-3 block text-xs font-medium uppercase tracking-[0.25em] text-slate-400"
+              >
+                Chat Link
+              </label>
+
+              <input
+                  id="chatLink"
+                  type="text"
+                  value={form.chatLink}
+                  onChange={(event) =>
+                      updateField(
+                          "chatLink",
+                          event.target.value
+                      )
+                  }
+                  placeholder="e.g. teams"
+                  maxLength={150}
+                  className="h-14 w-full rounded-2xl border border-slate-200 bg-[#fafafa] px-5 text-sm outline-none transition placeholder:text-slate-400 focus:border-black focus:bg-white"
+              />
             </section>
 
             <section className="mt-8">

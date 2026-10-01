@@ -33,6 +33,7 @@ type Game = {
   gender_preference: string | null;
   cost_per_player: number;
   description: string | null;
+  chat_link: string | null;
   status: string;
 };
 
@@ -49,6 +50,7 @@ type FormState = {
   genderPreference: string;
   costPerPlayer: string;
   description: string;
+  chatLink: string;
 };
 
 function getTodayString() {
@@ -105,6 +107,7 @@ export default function EditGamePage() {
     genderPreference: "everyone",
     costPerPlayer: "0",
     description: "",
+    chatLink: "",
   });
 
   const [loading, setLoading] = useState(true);
@@ -197,6 +200,7 @@ export default function EditGamePage() {
               gender_preference,
               cost_per_player,
               description,
+              chat_link,
               status
             `
           )
@@ -348,6 +352,8 @@ export default function EditGamePage() {
 
           description:
             loadedGame.description ?? "",
+          chatLink:
+            loadedGame.chat_link ?? "",
         });
 
         setLoading(false);
@@ -642,6 +648,10 @@ export default function EditGamePage() {
             Number(
               form.costPerPlayer
             ),
+
+          chat_link:
+            form.chatLink.trim() ||
+            null,
 
           description:
             form.description.trim() ||
@@ -1230,6 +1240,37 @@ export default function EditGamePage() {
                 The Rally yet.
               </p>
             </section>
+
+            {/* ================================================= */}
+            {/* CHAT LINK */}
+            {/* ================================================= */}
+
+            <section className="mt-8">
+              <label
+                  htmlFor="chatLink"
+                  className="mb-3 block text-xs font-medium uppercase tracking-[0.25em] text-slate-400"
+              >
+                Chat Link
+              </label>
+
+              <input
+                  id="chatLink"
+                  type="text"
+                  value={
+                    form.chatLink
+                  }
+                  onChange={(event) =>
+                      updateField(
+                          "chatLink",
+                          event.target.value
+                      )
+                  }
+                  maxLength={150}
+                  placeholder="e.g. teams"
+                  className="h-14 w-full rounded-2xl border border-slate-200 bg-[#fafafa] px-5 text-sm outline-none transition focus:border-black focus:bg-white"
+              />
+            </section>
+
 
             {/* ================================================= */}
             {/* DESCRIPTION */}
