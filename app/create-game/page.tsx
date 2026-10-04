@@ -688,6 +688,29 @@ export default function CreateGamePage() {
           <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-500">
             Set the details and invite other UoA students to join you.
           </p>
+          <p className="max-w-2xl text-sm leading-6 text-slate-500">
+            View facility availability on the{" "}
+            <a
+                href="https://sportandrec.auckland.ac.nz/Facility/GetSchedule?facilityId=017fe1ac-d893-4277-a55e-d2c2fcf060a1"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-blue-700 underline underline-offset-4 hover:text-blue-900"
+            >
+              UoA Sport and Rec portal
+            </a>
+            . Member drop-in means any active Hiwa member can use the facility free of
+            charge during designated drop-in hours. Information on facility reservation
+            requests and associated fees can be found{" "}
+            <a
+                href="https://sportandrec.auckland.ac.nz/facility/reservationrequest"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-blue-700 underline underline-offset-4 hover:text-blue-900"
+            >
+              here
+            </a>
+            .
+          </p>
         </div>
 
         <form
