@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
+import "react-day-picker/style.css";
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL

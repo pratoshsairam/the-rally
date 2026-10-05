@@ -66,3 +66,10 @@
     @apply bg-background text-foreground;
   }
 }
+
+.create-game-calendar {
+  --rdp-accent-color: #000;
+  --rdp-accent-background-color: #f1f5f9;
+  --rdp-day-width: clamp(28px, calc((100vw - 104px) / 7), 44px);
+  --rdp-day_button-width: calc(var(--rdp-day-width) - 2px);
+}

@@ -4,10 +4,12 @@ import {
   FormEvent,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { DayPicker } from "react-day-picker";
 import { createClient } from "@/lib/supabase/client";
 import Navbar from "@/components/navbar";
 
@@ -53,14 +55,16 @@ type FormState = {
   chatLink: string;
 };
 
-function getTodayString() {
-  const now = new Date();
-
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
+function formatLocalDate(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
 
   return `${year}-${month}-${day}`;
+}
+
+function getTodayString() {
+  return formatLocalDate(new Date());
 }
 
 function formatSportName(name: string) {
@@ -117,6 +121,22 @@ export default function EditGamePage() {
   const [success, setSuccess] = useState("");
 
   const [today, setToday] = useState("");
+
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const datePickerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!datePickerOpen) return;
+
+    function handleOutsideClick(event: PointerEvent) {
+      if (!datePickerRef.current?.contains(event.target as Node)) {
+        setDatePickerOpen(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", handleOutsideClick);
+    return () => document.removeEventListener("pointerdown", handleOutsideClick);
+  }, [datePickerOpen]);
 
   /*
    * =========================================================
@@ -845,7 +865,7 @@ export default function EditGamePage() {
 
         <form
           onSubmit={handleSubmit}
-          className="overflow-hidden rounded-[28px] border border-black/10 bg-white shadow-[0_20px_70px_rgba(0,0,0,0.04)]"
+          className="rounded-[28px] border border-black/10 bg-white shadow-[0_20px_70px_rgba(0,0,0,0.04)]"
         >
           <div className="p-8 sm:p-12">
 
@@ -945,7 +965,7 @@ export default function EditGamePage() {
             {/* ================================================= */}
 
             <section className="mt-8 grid gap-5 sm:grid-cols-3">
-              <div>
+              <div ref={datePickerRef} className="relative z-10">
                 <label
                   htmlFor="gameDate"
                   className="mb-3 block text-xs font-medium uppercase tracking-[0.25em] text-slate-400"
@@ -953,23 +973,53 @@ export default function EditGamePage() {
                   Date
                 </label>
 
-                <input
+                <button
                   id="gameDate"
-                  type="date"
-                  min={
-                    today || undefined
-                  }
-                  value={
-                    form.gameDate
-                  }
-                  onChange={(event) =>
-                    updateField(
-                      "gameDate",
-                      event.target.value
-                    )
-                  }
-                  className="h-14 w-full rounded-2xl border border-slate-200 bg-[#fafafa] px-4 text-sm outline-none transition focus:border-black focus:bg-white"
-                />
+                  type="button"
+                  aria-expanded={datePickerOpen}
+                  aria-controls={datePickerOpen ? "gameDateCalendar" : undefined}
+                  onClick={() => setDatePickerOpen((open) => !open)}
+                  className={`h-14 w-full rounded-2xl border border-slate-200 bg-[#fafafa] px-4 text-left text-sm outline-none transition focus:border-black focus:bg-white ${form.gameDate ? "text-black" : "text-slate-400"}`}
+                >
+                  {form.gameDate
+                    ? new Intl.DateTimeFormat("en-NZ", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      }).format(new Date(`${form.gameDate}T00:00:00`))
+                    : "Choose a date"}
+                </button>
+
+                {datePickerOpen && (
+                  <div
+                    id="gameDateCalendar"
+                    className="absolute -left-6 top-full z-20 mt-2 w-max max-w-[calc(100vw-3rem)] rounded-2xl border border-slate-200 bg-white p-3 shadow-lg sm:left-0"
+                    onKeyDown={(event) => {
+                      if (event.key === "Escape") {
+                        setDatePickerOpen(false);
+                        document.getElementById("gameDate")?.focus();
+                      }
+                    }}
+                  >
+                    <DayPicker
+                      className="create-game-calendar mx-auto"
+                      mode="single"
+                      required
+                      autoFocus
+                      defaultMonth={form.gameDate && (!today || form.gameDate >= today) ? new Date(`${form.gameDate}T00:00:00`) : undefined}
+                      selected={form.gameDate ? new Date(`${form.gameDate}T00:00:00`) : undefined}
+                      onSelect={(date) => {
+                        if (date) {
+                          updateField("gameDate", formatLocalDate(date));
+                          setDatePickerOpen(false);
+                          document.getElementById("gameDate")?.focus();
+                        }
+                      }}
+                      disabled={today ? { before: new Date(`${today}T00:00:00`) } : undefined}
+                      startMonth={today ? new Date(`${today}T00:00:00`) : undefined}
+                    />
+                  </div>
+                )}
               </div>
 
               <div>
