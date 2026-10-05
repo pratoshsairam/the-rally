@@ -10,6 +10,7 @@ import {
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { DayPicker } from "react-day-picker";
+import TimeSelect from "@/components/time-select";
 import { createClient } from "@/lib/supabase/client";
 import Navbar from "@/components/navbar";
 
@@ -1022,53 +1023,19 @@ export default function EditGamePage() {
                 )}
               </div>
 
-              <div>
-                <label
-                  htmlFor="startTime"
-                  className="mb-3 block text-xs font-medium uppercase tracking-[0.25em] text-slate-400"
-                >
-                  Start time
-                </label>
+              <TimeSelect
+                id="startTime"
+                label="Start time"
+                value={form.startTime}
+                onChange={(value) => updateField("startTime", value)}
+              />
 
-                <input
-                  id="startTime"
-                  type="time"
-                  value={
-                    form.startTime
-                  }
-                  onChange={(event) =>
-                    updateField(
-                      "startTime",
-                      event.target.value
-                    )
-                  }
-                  className="h-14 w-full rounded-2xl border border-slate-200 bg-[#fafafa] px-4 text-sm outline-none transition focus:border-black focus:bg-white"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="endTime"
-                  className="mb-3 block text-xs font-medium uppercase tracking-[0.25em] text-slate-400"
-                >
-                  End time
-                </label>
-
-                <input
-                  id="endTime"
-                  type="time"
-                  value={
-                    form.endTime
-                  }
-                  onChange={(event) =>
-                    updateField(
-                      "endTime",
-                      event.target.value
-                    )
-                  }
-                  className="h-14 w-full rounded-2xl border border-slate-200 bg-[#fafafa] px-4 text-sm outline-none transition focus:border-black focus:bg-white"
-                />
-              </div>
+              <TimeSelect
+                id="endTime"
+                label="End time"
+                value={form.endTime}
+                onChange={(value) => updateField("endTime", value)}
+              />
             </section>
 
             {/* ================================================= */}
