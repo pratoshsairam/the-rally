@@ -20,6 +20,7 @@ const SPORTS: Sport[] = [
   { name: "Volleyball", emoji: "🏐" },
   { name: "Table Tennis", emoji: "🏓" },
   { name: "Running", emoji: "🏃" },
+  { name: "Gym", emoji: "🏋️" },
 ];
 
 const DAYS = [

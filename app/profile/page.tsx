@@ -95,6 +95,12 @@ const FALLBACK_SPORTS: Sport[] = [
     emoji: "🏐",
     slug: "volleyball",
   },
+  {
+    id: 11,
+    name: "Gym",
+    emoji: "🏋️",
+    slug: "gym",
+  },
 ];
 
 const DAYS = [
