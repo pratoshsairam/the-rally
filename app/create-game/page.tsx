@@ -42,7 +42,7 @@ const initialForm: FormState = {
   gameDate: "",
   startTime: "",
   endTime: "",
-  location: "",
+  location: "UoA Recreation Centre",
   maxPlayers: "4",
   skillLevel: "beginner",
   gameType: "casual",
@@ -75,8 +75,9 @@ function formatLocalDate(date: Date) {
   return `${year}-${month}-${day}`;
 }
 
-function getTodayString() {
-  return formatLocalDate(new Date());
+function formatLocalTime(date: Date) {
+  const hour = String(date.getHours()).padStart(2, "0");
+  return `${hour}:00`;
 }
 
 function getSupabaseErrorMessage(error: unknown) {
@@ -151,7 +152,16 @@ export default function CreateGamePage() {
   }, [datePickerOpen]);
 
   useEffect(() => {
-    setToday(getTodayString());
+    const now = new Date();
+    const currentDate = formatLocalDate(now);
+    const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
+    setToday(currentDate);
+    setForm((current) => ({
+      ...current,
+      gameDate: current.gameDate || currentDate,
+      startTime: current.startTime || formatLocalTime(now),
+      endTime: current.endTime || formatLocalTime(oneHourLater),
+    }));
 
     async function loadPage() {
       setLoading(true);
