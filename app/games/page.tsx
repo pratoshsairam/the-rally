@@ -1,10 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Navbar from "@/components/navbar";
+import rallyRibbon from "@/app/images/Rally.png";
+
+const RALLY_HOST_ID = "b9b474fa-829e-42cd-9bfe-801d3055891e";
 
 type Game = {
   id: number;
@@ -1291,6 +1295,9 @@ export default function GamesPage() {
                   currentUserId ===
                   game.host_id;
 
+                const isRallyGame =
+                  game.host_id === RALLY_HOST_ID;
+
                 const progress =
                   game.max_players >
                   0
@@ -1306,9 +1313,16 @@ export default function GamesPage() {
                   <Link
                     key={game.id}
                     href={`/games/${game.id}`}
-                    className="group flex flex-col overflow-hidden rounded-[28px] border border-black/10 bg-white transition hover:-translate-y-1 hover:border-black/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.06)]"
+                    className="group relative flex flex-col overflow-hidden rounded-[28px] border border-black/10 bg-white transition hover:-translate-y-1 hover:border-black/20 hover:shadow-[0_20px_60px_rgba(0,0,0,0.06)]"
                   >
-                    <div className="p-6">
+                    {isRallyGame && (
+                      <Image
+                        src={rallyRibbon}
+                        alt="Rally game"
+                        className="pointer-events-none absolute -right-1 -top-1 w-[165px] max-w-none"
+                      />
+                    )}
+                    <div className="relative z-10 p-6">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex items-center gap-3">
                           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f1f1ef] text-2xl">
@@ -1330,19 +1344,21 @@ export default function GamesPage() {
                           </div>
                         </div>
 
-                        {isJoined ? (
-                          <span className="rounded-full bg-emerald-100 px-3 py-1.5 text-[10px] font-semibold text-emerald-700">
-                            Joined
-                          </span>
-                        ) : isHost ? (
-                          <span className="rounded-full bg-black px-3 py-1.5 text-[10px] font-semibold text-white">
-                            Your game
-                          </span>
-                        ) : (
-                          <span className="rounded-full bg-[#f1f1ef] px-3 py-1.5 text-[10px] font-semibold text-slate-600">
-                            Open
-                          </span>
-                        )}
+                        <div className="relative z-10 shrink-0">
+                          {isJoined ? (
+                            <span className="relative left-3 rounded-full bg-emerald-100 px-3 py-1.5 text-[10px] font-semibold text-emerald-700">
+                              Joined
+                            </span>
+                          ) : isHost ? (
+                            <span className="rounded-full bg-black px-3 py-1.5 text-[10px] font-semibold text-white">
+                              Your game
+                            </span>
+                          ) : (
+                            <span className="rounded-full bg-[#f1f1ef] px-3 py-1.5 text-[10px] font-semibold text-slate-600">
+                              Open
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       <h3 className="mt-6 line-clamp-2 text-2xl font-semibold tracking-tight transition group-hover:text-slate-700">
