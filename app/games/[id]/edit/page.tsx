@@ -34,6 +34,7 @@ type Game = {
   skill_level: string;
   game_type: string;
   gender_preference: string | null;
+  age_preference: string;
   cost_per_player: number;
   description: string | null;
   chat_link: string | null;
@@ -51,6 +52,7 @@ type FormState = {
   skillLevel: string;
   gameType: string;
   genderPreference: string;
+  agePreference: string;
   costPerPlayer: string;
   description: string;
   chatLink: string;
@@ -110,6 +112,7 @@ export default function EditGamePage() {
     skillLevel: "beginner",
     gameType: "casual",
     genderPreference: "everyone",
+    agePreference: "any",
     costPerPlayer: "0",
     description: "",
     chatLink: "",
@@ -219,6 +222,7 @@ export default function EditGamePage() {
               skill_level,
               game_type,
               gender_preference,
+              age_preference,
               cost_per_player,
               description,
               chat_link,
@@ -367,6 +371,9 @@ export default function EditGamePage() {
               loadedGame.gender_preference
             ) || "everyone",
 
+          agePreference:
+            loadedGame.age_preference || "any",
+
           costPerPlayer: String(
             loadedGame.cost_per_player ?? 0
           ),
@@ -495,6 +502,10 @@ export default function EditGamePage() {
 
     if (!form.gameType) {
       return "Please choose a game type.";
+    }
+
+    if (!["any", "under_25", "25_40", "40_plus"].includes(form.agePreference)) {
+      return "Please choose a valid age range.";
     }
 
     const cost = Number(
@@ -664,6 +675,9 @@ export default function EditGamePage() {
 
           gender_preference:
             form.genderPreference,
+
+          age_preference:
+            form.agePreference,
 
           cost_per_player:
             Number(
@@ -1213,6 +1227,28 @@ export default function EditGamePage() {
                   <option value="men">
                     Men only
                   </option>
+                </select>
+              </div>
+              <div>
+                <label
+                  htmlFor="agePreference"
+                  className="mb-3 block text-xs font-medium uppercase tracking-[0.25em] text-slate-400"
+                >
+                  Age
+                </label>
+
+                <select
+                  id="agePreference"
+                  value={form.agePreference}
+                  onChange={(event) =>
+                    updateField("agePreference", event.target.value)
+                  }
+                  className="h-14 w-full appearance-none rounded-2xl border border-slate-200 bg-[#fafafa] px-5 text-sm outline-none transition focus:border-black focus:bg-white"
+                >
+                  <option value="any">Any</option>
+                  <option value="under_25">Under 25</option>
+                  <option value="25_40">25-40</option>
+                  <option value="40_plus">40+</option>
                 </select>
               </div>
             </section>

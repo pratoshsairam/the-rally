@@ -34,6 +34,7 @@ type Game = {
   skill_level: string;
   game_type: string;
   gender_preference: string | null;
+  age_preference: string;
   cost_per_player: number;
   description: string | null;
   chat_link: string | null;
@@ -456,6 +457,7 @@ export default function GameDetailsPage() {
             skill_level,
             game_type,
             gender_preference,
+            age_preference,
             cost_per_player,
             description,
             chat_link,
@@ -1915,6 +1917,16 @@ export default function GameDetailsPage() {
                   </span>
                 )}
 
+              {game.age_preference && game.age_preference !== "any" && (
+                <span className="rounded-full border border-black/10 bg-white px-5 py-2.5 text-sm text-slate-700">
+                  Age {game.age_preference === "under_25"
+                    ? "Under 25"
+                    : game.age_preference === "25_40"
+                      ? "25-40"
+                      : "40+"}
+                </span>
+              )}
+
               <span
                 className={`rounded-full px-5 py-2.5 text-sm font-medium ${getStatusClasses(
                   effectiveStatus,
@@ -2122,7 +2134,7 @@ export default function GameDetailsPage() {
                   </p>
 
                   <h2 className="mt-2 text-2xl font-semibold tracking-tight">
-                    Who's playing
+                    Who&apos;s playing
                   </h2>
                 </div>
 
@@ -2413,7 +2425,7 @@ export default function GameDetailsPage() {
               {isHost && (
                 <div className="mt-7 rounded-2xl bg-[#f3f3f3] p-5">
                   <p className="text-sm font-semibold">
-                    You're hosting this
+                    You&apos;re hosting this
                     game.
                   </p>
 

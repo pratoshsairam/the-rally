@@ -20,6 +20,7 @@ type Game = {
   skill_level: string;
   game_type: string;
   gender_preference: string | null;
+  age_preference: string;
   cost_per_player: number;
   description: string | null;
   status: string;
@@ -186,6 +187,9 @@ export default function GamesPage() {
   const [selectedSkill, setSelectedSkill] =
     useState("all");
 
+  const [selectedAge, setSelectedAge] =
+    useState("all");
+
   const [selectedGameType, setSelectedGameType] =
     useState("all");
 
@@ -274,6 +278,7 @@ export default function GamesPage() {
                 skill_level,
                 game_type,
                 gender_preference,
+                age_preference,
                 cost_per_player,
                 description,
                 status
@@ -539,6 +544,13 @@ export default function GamesPage() {
         }
 
         if (
+          selectedAge !== "all" &&
+          (game.age_preference || "any") !== selectedAge
+        ) {
+          return false;
+        }
+
+        if (
           selectedGameType !== "all" &&
           game.game_type !==
             selectedGameType
@@ -634,6 +646,7 @@ export default function GamesPage() {
     search,
     selectedSport,
     selectedSkill,
+    selectedAge,
     selectedGameType,
     selectedGender,
     selectedCost,
@@ -741,6 +754,7 @@ export default function GamesPage() {
     setSearch("");
     setSelectedSport("all");
     setSelectedSkill("all");
+    setSelectedAge("all");
     setSelectedGameType("all");
     setSelectedGender("all");
     setSelectedCost("all");
@@ -751,6 +765,7 @@ export default function GamesPage() {
     search.trim() !== "" ||
     selectedSport !== "all" ||
     selectedSkill !== "all" ||
+    selectedAge !== "all" ||
     selectedGameType !== "all" ||
     selectedGender !== "all" ||
     selectedCost !== "all" ||
@@ -984,6 +999,28 @@ export default function GamesPage() {
                       <option value="expert">
                         Expert
                       </option>
+                    </select>
+                  </label>
+
+                  {/* AGE */}
+
+                  <label className="block">
+                    <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.15em] text-slate-400">
+                      Age
+                    </span>
+
+                    <select
+                      value={selectedAge}
+                      onChange={(event) =>
+                        setSelectedAge(event.target.value)
+                      }
+                      className="h-11 w-full rounded-xl border border-black/10 bg-white px-3 text-sm outline-none focus:border-black/30"
+                    >
+                      <option value="all">All ages</option>
+                      <option value="any">Any</option>
+                      <option value="under_25">Under 25</option>
+                      <option value="25_40">25-40</option>
+                      <option value="40_plus">40+</option>
                     </select>
                   </label>
 
@@ -1389,6 +1426,16 @@ export default function GamesPage() {
                             game.skill_level
                           )}
                         </span>
+
+                        {game.age_preference && game.age_preference !== "any" && (
+                          <span className="rounded-full border border-black/10 bg-white px-3 py-1.5 text-[11px] font-medium">
+                            Age {game.age_preference === "under_25"
+                              ? "Under 25"
+                              : game.age_preference === "25_40"
+                                ? "25-40"
+                                : "40+"}
+                          </span>
+                        )}
 
                         {game.gender_preference && (
                           <span className="rounded-full border border-black/10 bg-white px-3 py-1.5 text-[11px] font-medium">
