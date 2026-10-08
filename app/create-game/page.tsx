@@ -27,6 +27,7 @@ type FormState = {
   startTime: string;
   endTime: string;
   location: string;
+  minPlayers: string;
   maxPlayers: string;
   skillLevel: string;
   gameType: string;
@@ -44,6 +45,7 @@ const initialForm: FormState = {
   startTime: "",
   endTime: "",
   location: "UoA Recreation Centre",
+  minPlayers: "2",
   maxPlayers: "4",
   skillLevel: "beginner",
   gameType: "casual",
@@ -308,11 +310,17 @@ export default function CreateGamePage() {
       return "Please enter a location.";
     }
 
+    const minPlayers = Number(form.minPlayers);
     const maxPlayers = Number(
       form.maxPlayers
     );
 
+    if (!form.minPlayers || !Number.isInteger(minPlayers) || minPlayers < 2) {
+      return "Minimum players must be at least 2.";
+    }
+
     if (
+      !form.maxPlayers ||
       !Number.isInteger(maxPlayers) ||
       maxPlayers < 2
     ) {
@@ -321,6 +329,10 @@ export default function CreateGamePage() {
 
     if (maxPlayers > 100) {
       return "Maximum players cannot exceed 100.";
+    }
+
+    if (minPlayers > maxPlayers) {
+      return "Minimum players cannot exceed maximum players.";
     }
 
     if (!form.skillLevel) {
@@ -449,6 +461,7 @@ export default function CreateGamePage() {
         return;
       }
 
+      const minPlayers = Number(form.minPlayers);
       const maxPlayers = Number(
         form.maxPlayers
       );
@@ -476,6 +489,7 @@ export default function CreateGamePage() {
           end_time: form.endTime,
           location_name:
             form.location.trim(),
+          min_players: minPlayers,
           max_players: maxPlayers,
           skill_level:
             form.skillLevel,
@@ -945,6 +959,27 @@ export default function CreateGamePage() {
             <section className="mt-8 grid gap-5 sm:grid-cols-2">
               <div>
                 <label
+                  htmlFor="minPlayers"
+                  className="mb-3 block text-xs font-medium uppercase tracking-[0.25em] text-slate-400"
+                >
+                  Minimum players
+                </label>
+
+                <input
+                  id="minPlayers"
+                  type="number"
+                  min={2}
+                  max={100}
+                  value={form.minPlayers}
+                  onChange={(event) =>
+                    updateField("minPlayers", event.target.value)
+                  }
+                  className="h-14 w-full rounded-2xl border border-slate-200 bg-[#fafafa] px-5 text-sm outline-none transition focus:border-black focus:bg-white"
+                />
+              </div>
+
+              <div>
+                <label
                   htmlFor="maxPlayers"
                   className="mb-3 block text-xs font-medium uppercase tracking-[0.25em] text-slate-400"
                 >
@@ -966,7 +1001,9 @@ export default function CreateGamePage() {
                   className="h-14 w-full rounded-2xl border border-slate-200 bg-[#fafafa] px-5 text-sm outline-none transition focus:border-black focus:bg-white"
                 />
               </div>
+            </section>
 
+            <section className="mt-8 grid gap-5 sm:grid-cols-2">
               <div>
                 <label
                   htmlFor="skillLevel"
@@ -999,27 +1036,24 @@ export default function CreateGamePage() {
                   </option>
                 </select>
               </div>
-            </section>
-
-            <section className="mt-8 grid gap-5 sm:grid-cols-2">
               <div>
                 <label
-                  htmlFor="gameType"
-                  className="mb-3 block text-xs font-medium uppercase tracking-[0.25em] text-slate-400"
+                    htmlFor="gameType"
+                    className="mb-3 block text-xs font-medium uppercase tracking-[0.25em] text-slate-400"
                 >
                   Game type
                 </label>
 
                 <select
-                  id="gameType"
-                  value={form.gameType}
-                  onChange={(event) =>
-                    updateField(
-                      "gameType",
-                      event.target.value
-                    )
-                  }
-                  className="h-14 w-full appearance-none rounded-2xl border border-slate-200 bg-[#fafafa] px-5 text-sm outline-none transition focus:border-black focus:bg-white"
+                    id="gameType"
+                    value={form.gameType}
+                    onChange={(event) =>
+                        updateField(
+                            "gameType",
+                            event.target.value
+                        )
+                    }
+                    className="h-14 w-full appearance-none rounded-2xl border border-slate-200 bg-[#fafafa] px-5 text-sm outline-none transition focus:border-black focus:bg-white"
                 >
                   <option value="casual">
                     Casual
@@ -1030,6 +1064,9 @@ export default function CreateGamePage() {
                   </option>
                 </select>
               </div>
+            </section>
+
+            <section className="mt-8 grid gap-5 sm:grid-cols-2">
 
               <div>
                 <label
