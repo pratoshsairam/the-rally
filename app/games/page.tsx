@@ -1350,11 +1350,11 @@ export default function GamesPage() {
                               Joined
                             </span>
                           ) : isHost ? (
-                            <span className="rounded-full bg-black px-3 py-1.5 text-[10px] font-semibold text-white">
+                            <span className="relative left-3 rounded-full bg-black px-3 py-1.5 text-[10px] font-semibold text-white">
                               Your game
                             </span>
                           ) : (
-                            <span className="rounded-full bg-[#f1f1ef] px-3 py-1.5 text-[10px] font-semibold text-slate-600">
+                            <span className="relative left-3 rounded-full bg-[#f1f1ef] px-3 py-1.5 text-[10px] font-semibold text-slate-600">
                               Open
                             </span>
                           )}

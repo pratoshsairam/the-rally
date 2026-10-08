@@ -1,9 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Navbar from "@/components/navbar";
+import rallyRibbon from "@/app/images/Rally2.png";
+
+const RALLY_HOST_ID = "b9b474fa-829e-42cd-9bfe-801d3055891e";
 
 type UserProfile = {
   id?: string;
@@ -2012,12 +2016,20 @@ export default function DashboardPage() {
 
                   <div
                     key={game.id}
-                    className="bg-white border border-gray-200 rounded-[30px] p-8 min-h-[540px] flex flex-col hover:border-gray-300 transition"
+                    className="relative isolate overflow-hidden bg-white border border-gray-200 rounded-[30px] p-8 min-h-[540px] flex flex-col hover:border-gray-300 transition"
                   >
+
+                    {game.hostId === RALLY_HOST_ID && (
+                      <Image
+                        src={rallyRibbon}
+                        alt="Rally game"
+                        className="pointer-events-none absolute -right-1 -top-1 w-[100px] max-w-none"
+                      />
+                    )}
 
                     {/* GAME HEADER */}
 
-                    <div className="flex items-center justify-between gap-4">
+                    <div className="relative z-10 flex items-center justify-between gap-4">
 
                       <div className="w-16 h-16 rounded-2xl bg-[#f3f3f1] flex items-center justify-center text-3xl">
                         {game.emoji}
@@ -2031,7 +2043,7 @@ export default function DashboardPage() {
 
                     {/* GAME DETAILS */}
 
-                    <div className="mt-10">
+                    <div className="relative z-10 mt-10">
 
                       <h3 className="text-3xl font-medium">
                         {game.title}
@@ -2082,7 +2094,7 @@ export default function DashboardPage() {
 
                     {/* GAME FOOTER */}
 
-                    <div className="mt-auto pt-10">
+                    <div className="relative z-10 mt-auto pt-10">
 
                       <div className="flex justify-between mb-6">
 
