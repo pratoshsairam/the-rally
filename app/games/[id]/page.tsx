@@ -838,107 +838,6 @@ export default function GameDetailsPage() {
 
   /*
    * =========================================================
-   * NOTIFICATION HELPERS
-   * =========================================================
-   */
-
-  async function getCurrentUserDisplayName() {
-    if (!currentUserId) {
-      return "A student";
-    }
-
-    try {
-      const {
-        data,
-        error: profileError,
-      } = await supabase
-        .from("profiles")
-        .select(
-          "full_name, username",
-        )
-        .eq(
-          "id",
-          currentUserId,
-        )
-        .maybeSingle();
-
-      if (profileError) {
-        console.error(
-          "Could not load notification profile:",
-          profileError,
-        );
-
-        return "A student";
-      }
-
-      return (
-        data?.full_name ||
-        data?.username ||
-        "A student"
-      );
-    } catch (profileError) {
-      console.error(
-        "Could not load notification profile:",
-        profileError,
-      );
-
-      return "A student";
-    }
-  }
-
-  async function createGameNotification({
-    userId,
-    type,
-    title,
-    message,
-    gameId,
-    actorId,
-  }: {
-    userId: string;
-    type: string;
-    title: string;
-    message: string;
-    gameId: number;
-    actorId: string;
-  }) {
-    if (!userId || !actorId) {
-      return;
-    }
-
-    if (userId === actorId) {
-      return;
-    }
-
-    try {
-      const {
-        error: notificationError,
-      } = await supabase
-        .from("notifications")
-        .insert({
-          user_id: userId,
-          type,
-          title,
-          message,
-          game_id: gameId,
-          actor_id: actorId,
-        });
-
-      if (notificationError) {
-        console.error(
-          "Could not create game notification:",
-          notificationError,
-        );
-      }
-    } catch (notificationError) {
-      console.error(
-        "Could not create game notification:",
-        notificationError,
-      );
-    }
-  }
-
-  /*
-   * =========================================================
    * JOIN GAME
    * =========================================================
    */
@@ -1362,28 +1261,6 @@ export default function GameDetailsPage() {
         }
       }
 
-      /*
-       * CREATE JOIN NOTIFICATION
-       */
-
-      const displayName =
-        await getCurrentUserDisplayName();
-
-      await createGameNotification({
-        userId:
-          game.host_id,
-        type:
-          "game_joined",
-        title:
-          "Someone joined your game",
-        message:
-          `${displayName} joined "${game.title || "your game"}".`,
-        gameId:
-          game.id,
-        actorId:
-          currentUserId,
-      });
-
       setActionMessage(
         "You're in! The game has been added to your upcoming games.",
       );
@@ -1482,28 +1359,6 @@ export default function GameDetailsPage() {
 
         return;
       }
-
-      /*
-       * CREATE LEAVE NOTIFICATION
-       */
-
-      const displayName =
-        await getCurrentUserDisplayName();
-
-      await createGameNotification({
-        userId:
-          game.host_id,
-        type:
-          "game_left",
-        title:
-          "Someone left your game",
-        message:
-          `${displayName} left "${game.title || "your game"}".`,
-        gameId:
-          game.id,
-        actorId:
-          currentUserId,
-      });
 
       setActionMessage(
         "You've left the game.",
