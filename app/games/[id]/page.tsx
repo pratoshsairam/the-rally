@@ -2142,12 +2142,39 @@ export default function GameDetailsPage() {
                           )}
                         </div>
 
-                        {player.user_id ===
-                          game.host_id && (
-                          <span className="ml-auto rounded-full bg-black px-3 py-1 text-xs font-medium text-white">
-                            Host
-                          </span>
-                        )}
+                        <div className="ml-auto flex items-center gap-2">
+                          {player.user_id ===
+                            game.host_id && (
+                            <span className="rounded-full bg-black px-3 py-1 text-xs font-medium text-white">
+                              Host
+                            </span>
+                          )}
+
+                          {currentUserId !==
+                            player.user_id && (
+                            <UserSafetyMenu
+                              targetUserId={
+                                player.user_id
+                              }
+                              targetName={
+                                player.profile
+                                  ?.full_name
+                              }
+                              compact
+                              onActionComplete={() => {
+                                if (
+                                  player.user_id ===
+                                  game.host_id
+                                ) {
+                                  checkBlockStatus(
+                                    currentUserId,
+                                    game.host_id,
+                                  );
+                                }
+                              }}
+                            />
+                          )}
+                        </div>
                       </div>
                     ),
                   )}
