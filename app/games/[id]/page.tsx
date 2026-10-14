@@ -2585,6 +2585,30 @@ export default function GameDetailsPage() {
                   </p>
                 </div>
               )}
+                            {actionMessage && (
+                <div className="mt-5 rounded-2xl bg-emerald-50 px-5 py-4">
+                  <p className="text-sm leading-6 text-emerald-700">
+                    {actionMessage}
+                  </p>
+                </div>
+              )}
+
+              {(isHost || currentUserJoined) && (
+                <Link
+                  href={`/games/${game.id}/chat`}
+                  className="mt-5 flex h-12 w-full items-center justify-center gap-2 rounded-full border border-black/10 bg-white text-sm font-semibold text-black transition hover:bg-slate-50"
+                >
+                  Open game chat →
+                </Link>
+              )}
+
+              {error && (
+                <div className="mt-5 rounded-2xl bg-red-50 px-5 py-4">
+                  <p className="text-sm leading-6 text-red-700">
+                    {error}
+                  </p>
+                </div>
+              )}
 
               {error && (
                 <div className="mt-5 rounded-2xl bg-red-50 px-5 py-4">
