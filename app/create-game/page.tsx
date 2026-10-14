@@ -1193,7 +1193,7 @@ export default function CreateGamePage() {
                 htmlFor="description"
                 className="mb-3 block text-xs font-medium uppercase tracking-[0.25em] text-slate-400"
               >
-                Description
+                Details
               </label>
 
               <textarea
@@ -1205,7 +1205,7 @@ export default function CreateGamePage() {
                     event.target.value
                   )
                 }
-                placeholder="Tell players anything they should know..."
+                placeholder="Share the plan, what to bring, and anything else players should know..."
                 maxLength={1000}
                 rows={5}
                 className="w-full resize-none rounded-2xl border border-slate-200 bg-[#fafafa] px-5 py-4 text-sm leading-6 outline-none transition placeholder:text-slate-400 focus:border-black focus:bg-white"
