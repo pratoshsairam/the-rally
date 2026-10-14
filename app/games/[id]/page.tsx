@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import UserSafetyMenu from "@/components/user-safety-menu";
+import { Check, Share } from "lucide-react";
 
 type Sport = {
   id: number;
@@ -281,6 +282,9 @@ export default function GameDetailsPage() {
 
   const [actionMessage, setActionMessage] =
     useState("");
+
+  const [copied, setCopied] =
+    useState(false);
 
   /*
    * =========================================================
@@ -1575,6 +1579,81 @@ export default function GameDetailsPage() {
 
   /*
    * =========================================================
+   * SHARE GAME
+   * =========================================================
+   */
+
+  async function handleShareGame() {
+    const url =
+      typeof window !== "undefined"
+        ? window.location.href
+        : "";
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title:
+            game?.title ||
+            `${sport?.name || "Sport"} game`,
+          //text: `Join this ${sport?.name ? sport.name.toLowerCase() : "pickup"} game on The Rally!`,
+          url,
+        });
+        return;
+      } catch (err) {
+        if (
+          (err as Error).name ===
+          "AbortError"
+        ) {
+          return;
+        }
+      }
+    }
+
+    try {
+      if (
+        navigator.clipboard &&
+        navigator.clipboard.writeText
+      ) {
+        await navigator.clipboard.writeText(
+          url,
+        );
+      } else if (
+        typeof document !== "undefined"
+      ) {
+        const textArea =
+          document.createElement(
+            "textarea",
+          );
+        textArea.value = url;
+        textArea.style.position =
+          "fixed";
+        textArea.style.left =
+          "-999999px";
+        document.body.appendChild(
+          textArea,
+        );
+        textArea.focus();
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(
+          textArea,
+        );
+      }
+
+      setCopied(true);
+      setTimeout(() => {
+        setCopied(false);
+      }, 2000);
+    } catch (err) {
+      console.error(
+        "Failed to copy share link:",
+        err,
+      );
+    }
+  }
+
+  /*
+   * =========================================================
    * LOADING
    * =========================================================
    */
@@ -2440,6 +2519,33 @@ export default function GameDetailsPage() {
                     )}
                   </div>
                 )}
+
+              <div className="mt-4">
+                <button
+                  type="button"
+                  onClick={handleShareGame}
+                  className="flex h-12 w-full items-center justify-center gap-2 rounded-full border border-black/10 bg-white text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-black active:scale-[0.99]"
+                  aria-label="Share Game"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="h-4 w-4 text-emerald-600" />
+                      <span className="text-emerald-600">
+                        Link copied!
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <Share className="h-4 w-4 text-slate-600" />
+                      <span>Share Game</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              <p className="mt-7 text-center max-w-2xl text-sm leading-6 text-slate-500">
+                No gear? Rent at the front desk for $2.50.
+              </p>
 
               {isCompleted &&
                 !isCancelled &&

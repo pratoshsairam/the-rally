@@ -114,6 +114,28 @@ function getGameDateTime(game: Game) {
   ).getTime();
 }
 
+function getTimePeriod(timeString: string | null) {
+  if (!timeString) {
+    return "";
+  }
+
+  const hour = Number(timeString.split(":")[0]);
+
+  if (Number.isNaN(hour)) {
+    return "";
+  }
+
+  if (hour < 12) {
+    return "morning";
+  }
+
+  if (hour < 17) {
+    return "afternoon";
+  }
+
+  return "evening";
+}
+
 function addDaysToDateKey(
   dateKey: string,
   days: number
@@ -204,6 +226,9 @@ export default function GamesPage() {
     useState("all");
 
   const [selectedDate, setSelectedDate] =
+    useState("all");
+
+  const [selectedTimeOfDay, setSelectedTimeOfDay] =
     useState("all");
 
   const [sortBy, setSortBy] =
@@ -642,6 +667,13 @@ export default function GamesPage() {
           }
         }
 
+        if (
+          selectedTimeOfDay !== "all" &&
+          getTimePeriod(game.start_time) !== selectedTimeOfDay
+        ) {
+          return false;
+        }
+
         return true;
       }
     );
@@ -655,6 +687,7 @@ export default function GamesPage() {
     selectedGender,
     selectedCost,
     selectedDate,
+    selectedTimeOfDay,
     todayDateKey,
     sportMap,
     profiles,
@@ -763,6 +796,7 @@ export default function GamesPage() {
     setSelectedGender("all");
     setSelectedCost("all");
     setSelectedDate("all");
+    setSelectedTimeOfDay("all");
   }
 
   const hasActiveFilters =
@@ -773,7 +807,8 @@ export default function GamesPage() {
     selectedGameType !== "all" ||
     selectedGender !== "all" ||
     selectedCost !== "all" ||
-    selectedDate !== "all";
+    selectedDate !== "all" ||
+    selectedTimeOfDay !== "all";
 
   if (
     loading ||
@@ -887,7 +922,7 @@ export default function GamesPage() {
 
             {showFilters && (
               <div className="mt-4 border-t border-black/10 pt-5">
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+                <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                   {/* SPORT */}
 
                   <label className="block">
@@ -962,6 +997,42 @@ export default function GamesPage() {
 
                       <option value="week">
                         Next 7 days
+                      </option>
+                    </select>
+                  </label>
+
+                  {/* TIME OF DAY */}
+
+                  <label className="block">
+                    <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.15em] text-slate-400">
+                      Time of day
+                    </span>
+
+                    <select
+                      value={
+                        selectedTimeOfDay
+                      }
+                      onChange={(event) =>
+                        setSelectedTimeOfDay(
+                          event.target.value
+                        )
+                      }
+                      className="h-11 w-full rounded-xl border border-black/10 bg-white px-3 text-sm outline-none focus:border-black/30"
+                    >
+                      <option value="all">
+                        Any time
+                      </option>
+
+                      <option value="morning">
+                        Morning
+                      </option>
+
+                      <option value="afternoon">
+                        Afternoon
+                      </option>
+
+                      <option value="evening">
+                        Evening
                       </option>
                     </select>
                   </label>
