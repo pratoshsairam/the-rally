@@ -2440,6 +2440,9 @@ export default function GameDetailsPage() {
                     )}
                   </div>
                 )}
+              <p className="mt-7 text-center max-w-2xl text-sm leading-6 text-slate-500">
+                No gear? Rent at the front desk for $2.50.
+              </p>
 
               {isCompleted &&
                 !isCancelled &&
