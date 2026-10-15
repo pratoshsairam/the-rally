@@ -1461,7 +1461,7 @@ export default function DashboardPage() {
   // ===========================================================
 
   return (
-    <main className="min-h-screen bg-[#f7f7f5] text-black">
+    <main data-tour="dashboard" className="min-h-screen bg-[#f7f7f5] text-black">
 
       {/* =====================================================
           NAVIGATION
@@ -1521,6 +1521,7 @@ export default function DashboardPage() {
           {/* FIND GAME */}
 
           <Link
+            data-tour="explore-games"
             href="/games"
             className="group bg-black text-white rounded-[32px] p-8 md:p-12 min-h-[330px] flex flex-col justify-between hover:scale-[1.01] transition duration-300"
           >
@@ -1557,6 +1558,7 @@ export default function DashboardPage() {
           {/* CREATE GAME */}
 
           <Link
+            data-tour="create-game"
             href="/create-game"
             className="group bg-white border border-gray-200 rounded-[32px] p-8 md:p-12 min-h-[330px] flex flex-col justify-between hover:scale-[1.01] transition duration-300"
           >

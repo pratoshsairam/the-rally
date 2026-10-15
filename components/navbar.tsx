@@ -633,6 +633,7 @@ export default function Navbar() {
           {/* ================================================= */}
 
           <Link
+            data-tour="profile"
             href="/profile"
             className={`flex h-11 w-11 items-center justify-center rounded-full bg-black text-sm font-medium text-white transition hover:bg-gray-800 ${
               isActive("/profile")

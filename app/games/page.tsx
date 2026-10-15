@@ -888,6 +888,7 @@ export default function GamesPage() {
 
                 <input
                   type="text"
+                  data-tour="games-search"
                   value={search}
                   onChange={(event) =>
                     setSearch(
@@ -900,6 +901,7 @@ export default function GamesPage() {
               </div>
 
               <button
+                data-tour="games-filters"
                 type="button"
                 onClick={() =>
                   setShowFilters(
@@ -1249,6 +1251,7 @@ export default function GamesPage() {
             </label>
 
             <select
+              data-tour="games-sort"
               value={sortBy}
               onChange={(event) =>
                 setSortBy(

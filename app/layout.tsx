@@ -1,6 +1,9 @@
+
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
+import { Suspense } from "react";
+import GuidedTour from "@/components/guided-tour";
 import "react-day-picker/style.css";
 import "./globals.css";
 
@@ -10,17 +13,13 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-
   title: {
     default: "The Rally",
     template: "%s | The Rally",
   },
-
   description:
     "Find students to play sports with, create games, and join rallies at the University of Auckland.",
-
   applicationName: "The Rally",
-
   keywords: [
     "The Rally",
     "University of Auckland",
@@ -35,15 +34,8 @@ export const metadata: Metadata = {
     "basketball",
     "volleyball",
   ],
-
-  authors: [
-    {
-      name: "The Rally",
-    },
-  ],
-
+  authors: [{ name: "The Rally" }],
   creator: "The Rally",
-
   openGraph: {
     type: "website",
     siteName: "The Rally",
@@ -51,14 +43,12 @@ export const metadata: Metadata = {
     description:
       "Find students to play sports with, create games, and join rallies at the University of Auckland.",
   },
-
   twitter: {
     card: "summary_large_image",
     title: "The Rally",
     description:
       "Find students to play sports with, create games, and join rallies at the University of Auckland.",
   },
-
   robots: {
     index: false,
     follow: false,
@@ -86,6 +76,9 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
+          <Suspense fallback={null}>
+            <GuidedTour />
+          </Suspense>
         </ThemeProvider>
       </body>
     </html>
