@@ -316,17 +316,26 @@ export default function GameDetailsPage() {
 
   /*
    * =========================================================
-   * CHECK BLOCK BETWEEN CURRENT USER AND HOST
+   * CHECK BLOCK BETWEEN CURRENT USER, HOST, AND PLAYERS
    * =========================================================
    */
 
   async function checkBlockStatus(
     userId: string | null,
     hostId: string,
+    participantUserIds: string[] = [],
   ) {
     setBlockCheckLoading(true);
 
-    if (!userId || userId === hostId) {
+    const allTargetIds = Array.from(
+      new Set(
+        [hostId, ...participantUserIds].filter(
+          (id) => Boolean(id && id !== userId),
+        ),
+      ),
+    );
+
+    if (!userId || allTargetIds.length === 0) {
       setHasBlockedHost(false);
       setIsBlockedByHost(false);
       setBlockCheckLoading(false);
@@ -336,64 +345,68 @@ export default function GameDetailsPage() {
     try {
       /*
        * Check whether the current user blocked
-       * the game host.
+       * the game host or any participant, or whether
+       * the game host or any participant blocked the current user.
        */
-      const {
-        data: currentUserBlock,
-        error: currentUserBlockError,
-      } = await supabase
-        .from("user_blocks")
-        .select("id")
-        .eq(
-          "blocker_id",
-          userId,
-        )
-        .eq(
-          "blocked_id",
-          hostId,
-        )
-        .maybeSingle();
+      const [
+        currentUserBlocksRes,
+        incomingBlocksRes,
+      ] = await Promise.all([
+        supabase
+          .from("user_blocks")
+          .select("id, blocker_id, blocked_user_id")
+          .eq(
+            "blocker_id",
+            userId,
+          )
+          .in(
+            "blocked_user_id",
+            allTargetIds,
+          ),
+        supabase
+          .from("user_blocks")
+          .select("id, blocker_id, blocked_user_id")
+          .eq(
+            "blocked_user_id",
+            userId,
+          )
+          .in(
+            "blocker_id",
+            allTargetIds,
+          ),
+      ]);
 
-      /*
-       * Check whether the game host blocked
-       * the current user.
-       */
-      const {
-        data: hostBlock,
-        error: hostBlockError,
-      } = await supabase
-        .from("user_blocks")
-        .select("id")
-        .eq(
-          "blocker_id",
-          hostId,
-        )
-        .eq(
-          "blocked_id",
-          userId,
-        )
-        .maybeSingle();
-
-      if (currentUserBlockError) {
+      if (currentUserBlocksRes.error) {
         console.error(
           "Could not check current user's block:",
-          currentUserBlockError,
+          currentUserBlocksRes.error,
         );
       }
 
-      if (hostBlockError) {
+      if (incomingBlocksRes.error) {
         console.error(
-          "Could not check host block:",
-          hostBlockError,
+          "Could not check incoming block:",
+          incomingBlocksRes.error,
         );
       }
+
+      const blockedByMe =
+        Boolean(
+          currentUserBlocksRes.data &&
+            currentUserBlocksRes.data.length > 0,
+        );
+      const blockedMe =
+        Boolean(
+          incomingBlocksRes.data &&
+            incomingBlocksRes.data.length > 0,
+        );
 
       setHasBlockedHost(
-        !!currentUserBlock,
+        blockedByMe,
       );
 
       setIsBlockedByHost(
-        !!hostBlock,
+        blockedMe,
       );
     } catch (blockError) {
       console.error(
@@ -487,15 +500,6 @@ export default function GameDetailsPage() {
         gameData as Game;
 
       setGame(loadedGame);
-
-      /*
-       * Check block status immediately after
-       * loading the game and current user.
-       */
-      await checkBlockStatus(
-        user?.id ?? null,
-        loadedGame.host_id,
-      );
 
       const [
         sportResult,
@@ -674,6 +678,15 @@ export default function GameDetailsPage() {
               ) ?? null,
           }),
         ),
+      );
+
+      /*
+       * Check block status across host and all joined players.
+       */
+      await checkBlockStatus(
+        user?.id ?? null,
+        loadedGame.host_id,
+        playerIds,
       );
 
       const rawReviews =
@@ -879,74 +892,99 @@ export default function GameDetailsPage() {
        *
        * Check again immediately before joining.
        *
-       * This protects against someone blocking the
-       * host after the page was loaded.
+       * This protects against someone blocking or being blocked
+       * by the host or any participant after the page was loaded.
        */
 
       const {
-        data: currentUserBlock,
-        error: currentUserBlockError,
+        data: latestJoinedPlayers,
       } = await supabase
-        .from("user_blocks")
-        .select("id")
-        .eq(
-          "blocker_id",
-          currentUserId,
-        )
-        .eq(
-          "blocked_id",
-          game.host_id,
-        )
-        .maybeSingle();
+        .from("game_players")
+        .select("user_id")
+        .eq("game_id", game.id)
+        .eq("status", "joined");
 
-      const {
-        data: hostBlock,
-        error: hostBlockError,
-      } = await supabase
-        .from("user_blocks")
-        .select("id")
-        .eq(
-          "blocker_id",
-          game.host_id,
-        )
-        .eq(
-          "blocked_id",
-          currentUserId,
-        )
-        .maybeSingle();
+      const latestParticipantIds = (
+        latestJoinedPlayers ?? []
+      ).map((p) => p.user_id);
 
-      if (currentUserBlockError) {
-        console.error(
-          "Could not check your block:",
-          currentUserBlockError,
+      const targetIdsToCheck = Array.from(
+        new Set(
+          [
+            game.host_id,
+            ...joinedPlayers.map((p) => p.user_id),
+            ...latestParticipantIds,
+          ].filter((id) => Boolean(id && id !== currentUserId)),
+        ),
+      );
+
+      if (targetIdsToCheck.length > 0) {
+        const [
+          currentUserBlocksRes,
+          incomingBlocksRes,
+        ] = await Promise.all([
+          supabase
+            .from("user_blocks")
+            .select("id")
+            .eq(
+              "blocker_id",
+              currentUserId,
+            )
+            .in(
+              "blocked_user_id",
+              targetIdsToCheck,
+            ),
+          supabase
+            .from("user_blocks")
+            .select("id")
+            .eq(
+              "blocked_user_id",
+              currentUserId,
+            )
+            .in(
+              "blocker_id",
+              targetIdsToCheck,
+            ),
+        ]);
+
+        if (currentUserBlocksRes.error) {
+          console.error(
+            "Could not check your block:",
+            currentUserBlocksRes.error,
+          );
+        }
+
+        if (incomingBlocksRes.error) {
+          console.error(
+            "Could not check incoming block:",
+            incomingBlocksRes.error,
+          );
+        }
+
+        const hasBlockedSomeone = Boolean(
+          currentUserBlocksRes.data &&
+            currentUserBlocksRes.data.length > 0,
         );
-      }
-
-      if (hostBlockError) {
-        console.error(
-          "Could not check host block:",
-          hostBlockError,
-        );
-      }
-
-      const currentlyBlocked =
-        !!currentUserBlock ||
-        !!hostBlock;
-
-      if (currentlyBlocked) {
-        setHasBlockedHost(
-          !!currentUserBlock,
+        const isBlockedBySomeone = Boolean(
+          incomingBlocksRes.data &&
+            incomingBlocksRes.data.length > 0,
         );
 
-        setIsBlockedByHost(
-          !!hostBlock,
-        );
+        if (hasBlockedSomeone || isBlockedBySomeone) {
+          setHasBlockedHost(
+            hasBlockedSomeone,
+          );
 
-        setError(
-          "You can't join this game because you or the host has blocked the other user.",
-        );
+          setIsBlockedByHost(
+            isBlockedBySomeone,
+          );
 
-        return;
+          setError(
+            "You can't join this game because of an active user block with one of the players or the host.",
+          );
+
+          return;
+        }
       }
 
       /*
@@ -1024,42 +1062,42 @@ export default function GameDetailsPage() {
         latestGame.host_id !==
         game.host_id
       ) {
-        const {
-          data: latestUserBlock,
-        } = await supabase
-          .from("user_blocks")
-          .select("id")
-          .eq(
-            "blocker_id",
-            currentUserId,
-          )
-          .eq(
-            "blocked_id",
-            latestGame.host_id,
-          )
-          .maybeSingle();
-
-        const {
-          data: latestHostBlock,
-        } = await supabase
-          .from("user_blocks")
-          .select("id")
-          .eq(
-            "blocker_id",
-            latestGame.host_id,
-          )
-          .eq(
-            "blocked_id",
-            currentUserId,
-          )
-          .maybeSingle();
+        const [
+          latestUserBlockRes,
+          latestHostBlockRes,
+        ] = await Promise.all([
+          supabase
+            .from("user_blocks")
+            .select("id")
+            .eq(
+              "blocker_id",
+              currentUserId,
+            )
+            .eq(
+              "blocked_user_id",
+              latestGame.host_id,
+            )
+            .maybeSingle(),
+          supabase
+            .from("user_blocks")
+            .select("id")
+            .eq(
+              "blocker_id",
+              latestGame.host_id,
+            )
+            .eq(
+              "blocked_user_id",
+              currentUserId,
+            )
+            .maybeSingle(),
+        ]);
 
         if (
-          latestUserBlock ||
-          latestHostBlock
+          latestUserBlockRes.data ||
+          latestHostBlockRes.data
         ) {
           setError(
-            "You can't join this game because you or the host has blocked the other user.",
+            "You can't join this game because of an active user block.",
           );
 
           return;
@@ -1232,10 +1270,20 @@ export default function GameDetailsPage() {
             updatePlayerError,
           );
 
-          setError(
-            updatePlayerError.message ||
-              "We couldn't join this game.",
-          );
+          if (
+            updatePlayerError.message?.toLowerCase().includes("block") ||
+            updatePlayerError.details?.toLowerCase().includes("block")
+          ) {
+            setIsBlockedByHost(true);
+            setError(
+              "You can't join this game because of an active user block.",
+            );
+          } else {
+            setError(
+              updatePlayerError.message ||
+                "We couldn't join this game.",
+            );
+          }
 
           return;
         }
@@ -1256,10 +1304,20 @@ export default function GameDetailsPage() {
             joinError,
           );
 
-          setError(
-            joinError.message ||
-              "We couldn't join this game.",
-          );
+          if (
+            joinError.message?.toLowerCase().includes("block") ||
+            joinError.details?.toLowerCase().includes("block")
+          ) {
+            setIsBlockedByHost(true);
+            setError(
+              "You can't join this game because of an active user block.",
+            );
+          } else {
+            setError(
+              joinError.message ||
+                "We couldn't join this game.",
+            );
+          }
 
           return;
         }
@@ -2033,6 +2091,7 @@ export default function GameDetailsPage() {
                           checkBlockStatus(
                             currentUserId,
                             host.id,
+                            joinedPlayers.map((p) => p.user_id),
                           )
                         }
                       />
@@ -2050,7 +2109,7 @@ export default function GameDetailsPage() {
                     </p>
 
                     <p className="mt-1 text-xs leading-5 text-amber-800">
-                      You or the host has
+                      You or one of the participants has
                       blocked the other user.
                       You cannot join this
                       game while that block is
@@ -2162,15 +2221,11 @@ export default function GameDetailsPage() {
                               }
                               compact
                               onActionComplete={() => {
-                                if (
-                                  player.user_id ===
-                                  game.host_id
-                                ) {
-                                  checkBlockStatus(
-                                    currentUserId,
-                                    game.host_id,
-                                  );
-                                }
+                                checkBlockStatus(
+                                  currentUserId,
+                                  game.host_id,
+                                  joinedPlayers.map((p) => p.user_id),
+                                );
                               }}
                             />
                           )}
@@ -2503,7 +2558,7 @@ export default function GameDetailsPage() {
                         </p>
 
                         <p className="mt-1 text-xs leading-5 text-amber-800">
-                          You or the host has
+                          You or one of the participants has
                           blocked the other user.
                         </p>
                       </div>
